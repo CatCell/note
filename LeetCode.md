@@ -79,6 +79,8 @@ def fac(n):
 
 > 在此例中时间复杂度为$O(n)$空间复杂度为$O(n)$
 
+# 数据结构
+
 ## 数组
 
 ### 概念
@@ -101,4 +103,145 @@ def fac(n):
 
 ### 二分查找
 
-##
+# 算法
+
+## 基础算法
+
+### 枚举算法(Enumeration Algorithm)
+
+#### 百钱百鸡问题
+
+#### 两数之和
+
+```python
+# twosum
+class Solution(object):
+    def twoSum(self, nums, target):
+        """
+        :type nums: List[int]
+        :type target: int
+        :rtype: List[int]
+        """
+        for i in range(len(nums)):
+            for j in range(i + 1, len(nums)):
+                if nums[i] + nums[j] == target:
+                    return [i, j]
+```
+
+#### 记数质数
+
+#### 统计平方和三元数数目
+
+```python
+# countTriples
+class Solution(object):
+    def countTriples(self, n):
+        """
+        :type n: int
+        :rtype: int
+        """
+        num = 0
+        for i in range(1, n + 1):
+            for j in range(i + 1, n + 1):
+                for t in range(j + 1, n + 1):
+                    if i * i + j * j == t * t:
+                        num += 1
+        return 2 * num  # 无序结果数目是有序数目二倍
+
+```
+
+#### 信号网络中最好的网格
+
+```python
+import math
+class Solution(object):
+    def bestCoordinate(self, towers, radius):
+        """
+        :type towers: List[List[int]]
+        :type radius: int
+        :rtype: List[int]
+        """
+
+        def get1towermaypointlist(tower, radius):
+            templist = []
+            x_start, x_end = tower[0] - radius, tower[0] + radius
+            y_start, y_end = tower[1] - radius, tower[1] + radius
+            for i in range(x_start, x_end + 1):
+                for j in range(y_start, y_end + 1):
+                    templist.append((i, j))
+            return set(templist)  # 返回二维数组集{()()}
+
+        def getmaypointlist(towers, radius):
+            maypointset = set()
+            for tower in towers:
+                maypointset = maypointset.union(get1towermaypointlist(tower, radius))
+            return maypointset  # {()()}
+
+        def isreachable(point, tower, radius):
+            d2 = (point[0] - tower[0]) ** 2 + (point[1] - tower[1]) ** 2
+            if d2 <= radius**2:
+                return True
+            else:
+                return False
+
+        resultlist = []
+        for point in getmaypointlist(towers, radius):  # point 二维数组
+            power = 0
+            for tower in towers:
+                if isreachable(point, tower, radius):
+                    d = math.sqrt(
+                        (point[0] - tower[0]) ** 2 + (point[1] - tower[1]) ** 2
+                    )
+                    power += int(tower[2] / (1 + d))  # 少加括号
+            resultlist.append([point, power])  # [[(),5],[(),6]]
+
+        resultlist.sort(key=lambda x: (-x[1], x[0][0], x[0][1]))  # 这东西没有返回值
+        if resultlist[0][1] == 0:
+            return [0, 0]
+        else:
+            return list(resultlist[0][0])
+
+```
+
+#### 最大正方形
+
+```python
+# maximalSqure
+class Solution(object):
+    def maximalSquare(self, matrix):
+        """
+        :type matrix: List[List[str]]
+        :rtype: int
+        """
+        height, width = len(matrix), len(matrix[0])
+        thero_max = min(height, width)
+
+        def isAllone(x, y, size, matrix):
+            temp = 0
+            for i in range(x, x + size):
+                for j in range(y, y + size):
+                    if matrix[i][j] == "1":  # str
+                        temp += 1
+            if temp == size * size:
+                return True
+            else:
+                return False
+
+        for possiblemax in range(thero_max, 0, -1):
+            height_low, height_high = 0, height - possiblemax
+            width_low, width_high = 0, width - possiblemax
+            for i in range(height_low, height_high + 1):
+                for j in range(width_low, width_high + 1):
+                    if isAllone(i, j, possiblemax, matrix):
+                        return possiblemax**2
+        else:
+            return 0
+```
+
+#### 和为 k 的子数组
+
+...再写
+
+### 递归算法
+
+## 动态规划
