@@ -37,7 +37,7 @@ windows 较简单
 - git reflog：输出所有 commit id
 
 - git checkout \< filename \>:工作区文件回到最近一次 git add 或者 commit 的状态，在文档里写老板小作文还没 add
-- git reset Head \< file \>：暂存区文件 clean，工作区修改不变。写了老板的小作文 md
+- git reset Head \< file \>：暂存区文件 clean，工作区修改不变。写了:boss\*\*\*\*.md
 
 ## 远程仓库
 
