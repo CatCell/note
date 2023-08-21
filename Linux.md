@@ -1,105 +1,138 @@
 # Linux
 
-[鳥哥的 Linux 私房菜](https://linux.vbird.org/)
-[Linux 入门教程](https://www.xinbaoku.com/linux_tutorial/)
+## Linux 的安装
 
-## 基础知识
+## 文件权限和目录配置
 
-### 选购硬件
+### 使用者 User 与群组 Group
 
-1. 内存：服务器内存比 CPU 重要，高峰期内存不够使用 SWAP 会显著拖慢
+Linux 分对象设置权限,有 Owner,Group,Others,Root.
 
-### 安装操作系统
+### Linux 文件权限
 
-1. 磁盘
-   1. 分区 MBR(Master boot region) GPT
-   2. 格式化 Filesystem
-      1. 日志文件系统 NTFS xfs
-      2. FAT 闪存
-      3. block 大小 1k 2k 4k
-   3. VFS 负责 linux 各种文件系统的管理
-2.
-
-#### 简答
-
-1. Linux 安装时如果自己配置分区，为什么在使用 GPT 分区时安装程序要求设置 boot 分区？
-
-   > GPT 分区的磁盘为了适应硬件上的 BIOS，设置了 BIOS 相容分区 LBA0，如果还有别的 Boot loader 则需要单独设置分区 BIOS boot 放置 grub 等 bootloader。
-   > 此外说明，BIOS 虽然不认识 GPT 但是能通过相容分区 LBA0 读取到 bootload，如果 bootloader 不认识 GPT 如古早 winXP 配合 GPT 磁盘则找不到核心文件，启动就会失败。
-   > GPT 的一个好处就是支持多个主分区，每个分区都可以格式化不影响其他分区。这是写在 LBA1 里的，他在 LBA0 之后 128\*128 字节，里面记录了 GUID，最大分区数等等，注意 128 分区和容量无关，里面记录了第一个可用分区 LBA 和最后一个可用分区 LBA 位置。
-   > LBA 作用除了规定分区数之外还有检验码机制 CRC32，如果校验码出错就会使用存在最后的 34 个 LBA 区块恢复 LBA1
-   > LBA 是由 LBA 区块组成的
-
-2. 为什么 MBR 分区格式最多支持导 2TB？
-
-   > 这个和 32 位操作系统没有关系完全是 MBR 分区表规范的原因
-   > ![MBR分区表](https://img2020.cnblogs.com/blog/741682/202010/741682-20201008184307747-1604693136.gif)
-   > MBR 分区表仅有 64B，而且还分成四份，一个分区记录只用了 16B，它的结构和上图是一样的，限制在于最后使用了 4B 记录之前的扇区数和总扇区数，观察一个分区表至多只能支持$2^{32}$个扇区
-
-   $$
-   2^{32+9+3}=2^{2+3+40} \tag{每个扇区512B}
-   $$
-
-   所以最多支持 2TB
-
-3.
-
-### 使用
-
-1. 目录树
-   1. [目录树](https://linuxhandbook.com/content/images/2020/06/linux-system-directoies-poster.png)
-2. 使用者和群组，权限
-   1. 使用者分组 owner,group,others
-   2. 文件和目录权限
-      1. 文件 r w x
-      2. 目录 r 可读取目录文件名 ls，w 可以修改目录 block 即删除添加内的文件（不是修改文件内容）
-   3. 数字表示方式 4r,2w,1x
-3. 存储
-   1. 创建目录:Group block
-   2.
-
-## 案例
-
-1. 由于我的系统原本分区的不够好，我的用户希望能够独立一个 filesystem 附挂在 /srv/myproject 目录下。 那你该如何创建新的 filesystem ，并且让这个 filesystem 每次开机都能够自动的挂载到 /srv/myproject ， 且该目录是给 project 这个群组共享的， 其他人不可具有任何权限。且该 filesystem 具有 1GB 的容量。
-   > 创建分区并且进行格式化
-   > gdisk /dev/vda
-   > partprobe
-   > mkfs.xfs /dev/vda
-   > 在指定目录创建文件夹并配置自动挂载配置文件
-   > mkdir automountfolder
-   > vi /etc/fstab /dev/vda3 /srv/automountfolder
-   > mount -a
-   > 设置权限
-   > chgrp /dev/vda3 users
-   > chmod 2770 /dev/vda3
-   > 测试是否符合要求
-   > df /srv/users
-   > ls -al
-2. 我想要寻找名为 passwd 的文件，他在一个月之前创建，我应该如何寻找？
-   > 如果是很久之间建立的文件，那么索引中已经存在，可以用 locate；否则首先受用 whereis，最后的选择 find
-3. 运维准备为不同的用户使用不同的欢迎界面，技术人员希望在欢迎界面中标注内核版本，操作系统版本，终端机接口,硬件等级，网络名称。普通用户希望得到日期和可视化的界面。
-   Ubuntu 系统较为曲折，以 CentoS 为例
-   前者：\r\S\l \m \n
-   后者：\d\t
-4. ls，cd 是最常使用的指令，找出他们是如何被 kernal 使用的。
-   > type ls # alias ''
-   > **type** cd #built-in command
-   > cd 式 bash 内置的,ls 有两个可执行文件，但他是加上参数‘--color=auto’作为别名
-5. 把/data 内以非小写字母开头，中间有数字，结尾为中间字符为 a 的 5 个字符的文件复制到临时目录中去?
-   > mkdir /tmp/test ; cp -a /data/[^a-z]\*[0-9]\*??a?? /tmp/test
-6. cat 创建一个由键盘输入内容文件，在不清楚目录是否存在的情况下创建文件
-   > ll /test||touch /test&&cat > /test/txt
-   > 如果交换顺序是不行的，会导致在目录存在的时候重复创建，不存在的时候在不存在的目录上新建文件
-7. xargs 是一个常用的，分析下面那些会被执行成功，为什么？
+#### Linux 文件属性
 
 ```bash
-[dmtsai@study ~]$ id $(cut -d ':' -f 1 /etc/passwd | head -n 3)
-[dmtsai@study ~]$ cut -d ':' -f 1 /etc/passwd | head -n 3 | id
-[dmtsai@study ~]$ cut -d ':' -f 1 /etc/passwd | head -n 3 | xargs id
-[dmtsai@study ~]$ cut -d ':' -f 1 /etc/passwd | head -n 3 | xargs -n 1 id
+ubuntu@VM-4-5-ubuntu:~$ ls -al
+total 60
+drwxr-x--- 6 ubuntu ubuntu 4096 Aug 21 00:01 .
+drwxr-xr-x 4 root   root   4096 Aug 10 00:44 ..
+-rw------- 1 ubuntu ubuntu 2345 Aug 20 23:53 .bash_history
+-rw-r--r-- 1 ubuntu ubuntu  220 Jan  7  2022 .bash_logout
+-rw-r--r-- 1 ubuntu ubuntu 3771 Jan  7  2022 .bashrc
+drwx------ 2 ubuntu ubuntu 4096 May 18  2022 .cache
+drwx------ 3 ubuntu ubuntu 4096 Aug 10 00:22 .config
+drwxrwxr-x 2 ubuntu ubuntu 4096 May 18  2022 .pip
+-rw-r--r-- 1 ubuntu ubuntu  807 Jan  7  2022 .profile
+-rw-rw-r-- 1 ubuntu ubuntu   73 Aug 10 00:15 .pydistutils.cfg
+drwx------ 2 ubuntu ubuntu 4096 May 18  2022 .ssh
+-rw-r--r-- 1 ubuntu ubuntu    0 Aug 10 00:27 .sudo_as_admin_successful
+-rwxrw-r-x 1 ubuntu ubuntu  282 Aug 17 11:15 test.py
+-rw------- 1 ubuntu ubuntu 7351 Aug 17 11:15 .viminfo
+-rw------- 1 ubuntu ubuntu   59 Aug 21 00:01 .Xauthority
+
 ```
 
-第一句话在 centos 因为 id 金额能接受一个参数所以会失败，但是在 ubuntu 是可以成功的
-第二个命令由于 id 不是管道命令所以会失败
-第三同第二
-第四是一定可以成功的，他分别处理参数
+| 权限       | 链接 | 拥有者 | 群组   | 文件大小(Byte) | 修改日期     | 文件名 |
+| ---------- | ---- | ------ | ------ | -------------- | ------------ | ------ |
+| drwxr-x--- | 6    | ubuntu | ubuntu | 4096           | Aug 21 00:15 | .pip   |
+
+#### Linux 改变文件属性
+
+- **chgrp [-R] grpname filename**:改变群组
+- **chown [-R] username filename**：改变拥有者，如 CP 前先 chown
+- **chmod [-R] 770/...**：改变权限，按照规则计算 OGO 的权限数值
+
+#### 目录和文件的权限区别
+
+| 元件 | 内容   | 叠代物件？ | r        | w          | x        |
+| ---- | ------ | ---------- | -------- | ---------- | -------- |
+| 文件 | data   | 文件数据夹 | 读       | 写         | 执行     |
+| 目录 | 文件名 | 可分类抽屉 | 读文件名 | 修改文件名 | 进入目录 |
+
+#### 执行操作和需要的权限
+
+| 操作           | /dir0 | /dir0/file | dir1 | 核心 |
+| -------------- | ----- | ---------- | ---- | ---- |
+| 读取 file 内容 | x     | r          | -    | .    |
+| 修改           | x     | w          | -    | .    |
+| 执行           | x     | x          | -    | .    |
+| 删除           | wx    | -          | -    | .    |
+| 复制到/dir1    | x     | w          | wx   | .    |
+
+### Linux 目录配置
+
+#### FHS 简介
+
+> 根据 **FHS(Filesystem Hierarchy Standard)** 的标准文件指出，他们的主要目的是希望让使用者可以了解到已安装软件通常放 置于那个目录下,所以他们希望独立的软件开发商、操作系统制作者、以及想要维护系统的使用者，都能够遵循 FHS 的标准。
+
+![FHS](https://images0.cnblogs.com/blog/443733/201409/021134253607650.gif)
+
+#### FHS 目录的四种交互形态
+
+| case     | shareable                                           | unshareable                            |
+| -------- | --------------------------------------------------- | -------------------------------------- |
+| static   | /usr(软件放置) /opt(第三方软件)                     | /etc(配置文件) /boot(开机和核心档)     |
+| variavle | /var/mail(使用者邮件信箱) /var/spool/news(新闻群组) | /var/lock(程序相关) /var/run(程序相关) |
+
+## Linux 文件和目录管理
+
+### 目录与路径
+
+- **cd**:change dire
+- **pwd**: print wd
+- **mkdir [-p] [-m 711]**: make dir
+- **rmdir**: remove
+
+\${PATH}:环境变量
+
+### 文件与目录管理
+
+- ls -a -l:list 隐藏文件，以长数据格式串列出
+- 文件操作
+  - cp
+  - mv：移动，更名(rename 专职批量重命名)
+  - rm
+- basename:取的文件名
+- dirname：取得目录名
+
+### 文件内容查询
+
+- 查阅内容
+
+  - cat tac：concatenate -A(-vRT)
+  - nl:顺便输出行号
+  - more less
+  - head tail：只看头尾
+  - od
+
+- status time(stime)
+- modification time(mtime)
+- access time(atime)
+
+```bash
+# 将上个范例的bashrc日期改为2014/06/15 2:02
+[dmtsai@study	tmp]#	touch	-t	201406150202	bashrc
+```
+
+## Linux 磁盘和文件系统管理
+
+# bala
+
+## 认识与学习 BASH
+
+## 正则表达式与文件格式化处理
+
+## 学习 Shell Script
+
+## 账号管理与 ACL 权限设置
+
+## 认识系统服务 Daemons
+
+## 认识与分析登陆文件
+
+## 开机流程，模块管理与 Loader
+
+## 基础系统设置和备份策略
+
+## 软件安装 RPM，SRPM 与 YUM
