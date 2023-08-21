@@ -198,3 +198,34 @@ global 配置文件在 .gitconfig
 1. 创建用户运行 git 服务
 2. 收集公钥
 3. 禁用 shell 服务
+
+# 日常使用
+
+"Everything up-to-date"问题
+
+```bash
+> git push origin master:main
+Enter passphrase for key '/c/Users/PC/.ssh/id_rsa':
+Everything up-to-date
+
+# 网络资料说是没有add和commit导致repository和origin一致
+# 具体不详原因
+
+git push
+Enter passphrase for key '/c/Users/PC/.ssh/id_rsa':
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (7/7), 926 bytes | 926.00 KiB/s, done.
+Total 7 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To github.com:CatCell/note
+   ccb6f43..0950011  main -> main
+
+# 这样操作后虽然成功上传，但是出现了新的分支main
+>git branch
+* main
+  master
+
+```
