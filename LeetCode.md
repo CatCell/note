@@ -107,7 +107,11 @@ def fac(n):
 
 ## 基础算法
 
-### 枚举算法(Enumeration Algorithm)
+### 枚举算法
+
+> **枚举算法（Enumeration Algorithm）** ：也称为穷举算法，指的是按照问题本身的性质，一一列举出该问题所有可能的解，并在逐一列举的过程中，将它们逐一与目标状态进行比较以得出满足问题要求的解。在列举的过程中，既不能遗漏也不能重复
+
+枚举算法是遇到问题最先想到的方法，一般来说效率不高，但是容易验证正确性。
 
 #### 百钱百鸡问题
 
@@ -243,5 +247,208 @@ class Solution(object):
 ...再写
 
 ### 递归算法
+
+> **递归（Recursion）**：指的是一种通过重复将原问题分解为同类的子问题而解决的方法。在绝大数编程语言中，可以通过在函数中再次调用函数自身的方式来实现递归。
+> 递归和数学归纳法
+
+| 数学归纳法 | 初始条件 | 归纳关系 |
+| ---------- | -------- | -------- |
+| 递归       | 终止条件 | 回归过程 |
+
+递归三步
+
+1. 写出递归关系
+2. 写出终止条件
+3. 翻译为代码
+
+#### 汉诺塔
+
+```python
+# Hannoi
+def move(n, a, b, c):
+    if n == 1:
+        print(a + "-->" + c)
+    else:
+        move(n - 1, a, c, b)
+        move(1, a, b, c)
+        move(n - 1, b, a, c)
+
+
+move(3, "A", "B", "C")
+
+```
+
+#### 求整数次幂
+
+#### 交换两两列表之间的节点
+
+```python
+# swapPairs
+# Definition for singly-linked list.
+# class ListNode(object):
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution(object):
+    def swapPairs(self, head):
+        """
+        :type head: ListNode
+        :rtype: ListNode
+        """
+        # 链表不是很懂
+        start = ListNode(0)
+        start.next = head
+        curr = start
+        while curr.next and curr.next.next:
+            node1 = curr.next
+            node2 = curr.next.next
+            curr.next = node2
+            node1.next = node2.next  # 需要和后面链接
+            node2.next = node1
+            curr = node1
+        return start.next
+
+```
+
+#### 斐波那契数列
+
+```python
+# fib
+class Solution(object):
+    def fib(self, n):
+        """
+        :type n: int
+        :rtype: int
+        """
+
+        if n in (0, 1):
+            return n
+        else:
+            return Solution().fib(n - 1) + Solution().fib(n - 2)
+
+```
+
+#### 计算整数幂
+
+```python
+# mypow
+class Solution(object):
+    def myPow(self, x, n):
+        """
+        :type x: float
+        :type n: int
+        :rtype: float
+        """
+        if n < 0:
+            return 1 / Solution().myPow(x, -n)
+        if n == 0:
+            return 1
+        return Solution().myPow(x, n - 1) * x
+
+
+print(Solution().myPow(2, -2))
+# 有最大迭代的报错，测试样例可以通过.
+
+
+# mypow2
+class Solution(object):
+    def myPow(self, x, n):
+        """
+        :type x: float
+        :type n: int
+        :rtype: float
+        """
+        if n < 0:
+            return 1 / self.myPow(x, -n)
+        if n % 2 == 0:
+            return self.myPow(x, n // 2) ** 2
+        elif n == 1:
+            return x
+        else:
+            return self.myPow(x, n // 2) ** 2 * x
+
+
+# 这个不应该嵌套次数是log2n吗，这还会溢出？
+print(Solution().myPow(2, -2))
+
+```
+
+### 分治算法
+
+> **分治算法（Divide and Conquer）** ：字面上的解释是「分而治之」，就是把一个复杂的问题分成两个或更多的相同或相似的子问题，直到最后子问题可以简单的直接求解，原问题的解即子问题的解的合并。
+
+递归算法是分治算法的子集，除了递归之外，还有迭代算法可以实现某些分治。如快速傅里叶变换算法(?)、二分查找算法、非递归实现的归并排序算法等等。
+
+#### 归并排序
+
+```python
+# sortArray
+class Solution(object):
+    # 归并排序求解
+    def merge(self, leftarr, rightarr):
+        mergeresult = []
+        while leftarr and rightarr:
+            if leftarr[0] < rightarr[0]:
+                mergeresult.append(leftarr.pop(0))
+            else:
+                mergeresult.append(rightarr.pop(0))
+        while leftarr:
+            mergeresult.append(leftarr.pop(0))
+
+        while rightarr:
+            mergeresult.append(rightarr.pop(0))
+        return mergeresult
+
+    def mergesort(self, arr):
+        if len(arr) <= 1:  # ==
+            return arr
+        mid = len(arr) // 2
+        leftarr = self.mergesort(arr[:mid])  # 不含mid
+        rightarr = self.mergesort(arr[mid:])
+        return self.merge(leftarr, rightarr)
+
+    def sortArray(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: List[int]
+        """
+        return self.mergesort(nums)
+
+
+# 这个速度不够快过不去
+x = Solution().sortArray([3, 4, 10, 6, 7])
+print(x)
+
+```
+
+#### 二分查找
+
+```python
+# search
+class Solution(object):
+    def search(self, nums, target):
+        """
+        :type nums: List[int]
+        :type target: int
+        :rtype: int
+        """
+        mid = len(nums) // 2
+
+        if len(nums) == 1:
+            if nums[0] != target:
+                return -1
+            else:
+                return nums[0]
+        if nums[mid] <= target:
+            return self.search(nums[mid:], target)
+        else:
+            return self.search(nums[:mid], target)
+
+
+# 没实现寻找下标
+x = Solution().search([-1, 0, 3, 5, 9, 12], 5)
+print(x)
+
+```
 
 ## 动态规划
