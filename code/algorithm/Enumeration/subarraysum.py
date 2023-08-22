@@ -5,19 +5,23 @@ class Solution(object):
         :type k: int
         :rtype: int
         """
-        times = 0
-        for start in range(len(nums) + 1):
-            temp_sum = 0
-            lengthrange = len(nums) - start
-            for length in range(1, lengthrange + 1):
-                for i in range(start, start + length):
-                    temp_sum += nums[i]
-                    print(times, start, length, i, nums[i])
-                    if temp_sum == k:
-                        times += 1
-                        # print(times, start, length, i, nums[i])
-        return times
+        total = 0
+        for i in range(len(nums)):  # 开始位置
+            lenmax = len(nums) - i  # 在某一开始位置的最大长度
+            for length in range(1, lenmax + 1):  # 1-max
+                tempsum = 0
+                for j in range(i, length + i):
+                    # print(i, length, j)
+                    tempsum += nums[j]
+                    # print(tempsum)
+                if tempsum == k:
+                    total += 1
+        return total
 
 
 if __name__ == "__main__":
-    print(Solution().subarraySum([1, 2, 3], 3))
+    testarr0 = [1, 1, 1]
+    testarr1 = [1, 2, 3, 4, -1]
+    print(Solution().subarraySum(testarr0, 2))  # 一般的可以
+    # 第二天很快就写出来了
+    # 算法速度不够
