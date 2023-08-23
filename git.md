@@ -201,7 +201,7 @@ global 配置文件在 .gitconfig
 
 # 日常使用
 
-"Everything up-to-date"问题
+## "Everything up-to-date"问题
 
 ```bash
 > git push origin master:main
@@ -229,3 +229,5 @@ To github.com:CatCell/note
   master
 
 ```
+
+## git reset 但是工作区没有回退版本
