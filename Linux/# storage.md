@@ -1,0 +1,262 @@
+# Storage
+
+## Linux 的安装
+
+## Linux 文件权限和目录配置
+
+### 使用者 User 与群组 Group
+
+Linux 分对象设置权限,有 Owner,Group,Others,Root.
+
+### Linux 文件权限
+
+#### Linux 文件属性
+
+```bash
+ubuntu@VM-4-5-ubuntu:~$ ls -al
+total 60
+drwxr-x--- 6 ubuntu ubuntu 4096 Aug 21 00:01 .
+drwxr-xr-x 4 root   root   4096 Aug 10 00:44 ..
+-rw------- 1 ubuntu ubuntu 2345 Aug 20 23:53 .bash_history
+-rw-r--r-- 1 ubuntu ubuntu  220 Jan  7  2022 .bash_logout
+-rw-r--r-- 1 ubuntu ubuntu 3771 Jan  7  2022 .bashrc
+drwx------ 2 ubuntu ubuntu 4096 May 18  2022 .cache
+drwx------ 3 ubuntu ubuntu 4096 Aug 10 00:22 .config
+drwxrwxr-x 2 ubuntu ubuntu 4096 May 18  2022 .pip
+-rw-r--r-- 1 ubuntu ubuntu  807 Jan  7  2022 .profile
+-rw-rw-r-- 1 ubuntu ubuntu   73 Aug 10 00:15 .pydistutils.cfg
+drwx------ 2 ubuntu ubuntu 4096 May 18  2022 .ssh
+-rw-r--r-- 1 ubuntu ubuntu    0 Aug 10 00:27 .sudo_as_admin_successful
+-rwxrw-r-x 1 ubuntu ubuntu  282 Aug 17 11:15 test.py
+-rw------- 1 ubuntu ubuntu 7351 Aug 17 11:15 .viminfo
+-rw------- 1 ubuntu ubuntu   59 Aug 21 00:01 .Xauthority
+
+```
+
+| 权限       | 链接 | 拥有者 | 群组   | 文件大小(Byte) | 修改日期     | 文件名 |
+| ---------- | ---- | ------ | ------ | -------------- | ------------ | ------ |
+| drwxr-x--- | 6    | ubuntu | ubuntu | 4096           | Aug 21 00:15 | .pip   |
+
+#### Linux 改变文件属性
+
+- **chgrp [-R] grpname filename**:改变群组
+- **chown [-R] username filename**：改变拥有者，如 CP 前先 chown
+- **chmod [-R] 770/...**：改变权限，按照规则计算 OGO 的权限数值
+
+#### 目录和文件的权限区别
+
+| 元件 | 内容   | 叠代物件？ | r        | w          | x        |
+| ---- | ------ | ---------- | -------- | ---------- | -------- |
+| 文件 | data   | 文件数据夹 | 读       | 写         | 执行     |
+| 目录 | 文件名 | 可分类抽屉 | 读文件名 | 修改文件名 | 进入目录 |
+
+#### 执行操作和需要的权限
+
+| 操作           | /dir0 | /dir0/file | dir1 | 核心 |
+| -------------- | ----- | ---------- | ---- | ---- |
+| 读取 file 内容 | x     | r          | -    | .    |
+| 修改           | x     | w          | -    | .    |
+| 执行           | x     | x          | -    | .    |
+| 删除           | wx    | -          | -    | .    |
+| 复制到/dir1    | x     | w          | wx   | .    |
+
+### Linux 目录配置
+
+#### FHS 简介
+
+> 根据 **FHS(Filesystem Hierarchy Standard)** 的标准文件指出，他们的主要目的是希望让使用者可以了解到已安装软件通常放 置于那个目录下,所以他们希望独立的软件开发商、操作系统制作者、以及想要维护系统的使用者，都能够遵循 FHS 的标准。
+
+![FHS](https://images0.cnblogs.com/blog/443733/201409/021134253607650.gif)
+
+#### FHS 目录的四种交互形态
+
+| case     | shareable                                           | unshareable                            |
+| -------- | --------------------------------------------------- | -------------------------------------- |
+| static   | /usr(软件放置) /opt(第三方软件)                     | /etc(配置文件) /boot(开机和核心档)     |
+| variavle | /var/mail(使用者邮件信箱) /var/spool/news(新闻群组) | /var/lock(程序相关) /var/run(程序相关) |
+
+### 简答
+
+1. FHS
+   1. 解释什么是 FHS，他是受什么需求而产生的。
+   2. 指出那些目录是可分享，不变动的。
+   3. 运维经常需要修改配置文件而且 docker 官网上会展示如何通过 yml 文件配置，所以配置文件时可分享不变动的，对吗？
+
+## Linux 文件和目录管理
+
+### 目录与路径
+
+- **cd**:change dire
+- **pwd**: print wd
+- **mkdir [-p] [-m 711]**: make dir
+- **rmdir**: remove
+
+\${PATH}:环境变量
+
+### 文件与目录管理
+
+- **ls -a -l**:list 隐藏文件，以长数据格式串列出
+- 文件操作
+  - **cp**
+  - **mv**：移动，更名(rename 专职批量重命名)
+  - **rm**
+- **basename**:取得文件名
+- **dirname**：取得目录名
+
+### 文件内容查询
+
+- 查阅内容
+
+  - **cat tac**：concatenate -A(-vRT)
+  - **nl**:同时输出行号
+  - more less
+  - **head tail**：只看头尾
+  - od
+
+- status time(stime)
+- modification time(mtime)
+- access time(atime)
+
+```bash
+# 将上个范例的bashrc日期改为2014/06/15 2:02
+[dmtsai@study	tmp]#	touch	-t	201406150202	bashrc
+```
+
+### 本章练习题
+
+1. list 根目录下所有文件的详细信息并认识每列属性？
+2. 新建目录和文件并修改：
+   1. 新建一个 textdr 的目录，发现拼写错误后改名为 testdr，创建名为 testtxt 的空文件，修改他的修改日期为两天前，编辑内容为 content1；
+   2. 改编拥有者为 root，**改变群组**到 root，权限设置为 owner 拥有文件全部权限，group 缺少修改文件的权限，其他人无权限也不能观察到文件的存在，只有 owner 能够使用 ls 命令看到所有文件。
+   3. 最后新建一个名为 new 的目录，将这个目录移动到 new 中，并将 new 文件删除
+3. 阅读一份说明文档(自带的有哪些？)：
+   1. 我想要查看文件尾部的签名
+   2. 我想要显示行号我应该用 cat 或者 cat -n 吗
+   3. more 和 less 命令如何操作
+4. 平时看到的时间信息是什么时间信息？如何查看其他两种时间信息？
+5. 提示符前面就是当前文件路径，所以 pwd 是一个无用的操作对吗？
+   1. 不要经常用 root：如果这样说明你经常使用 root 用户操作，这可能导致无法挽回的错误，是一个坏习惯
+   2. 不应该单独思考每个指令的用处：事实上在自动化获取路径中，pwd 非常有用
+
+## Linux 磁盘和文件系统管理
+
+### 认识 linux 文件系统
+
+#### 文件系统特性
+
+- 索引式文件系统
+  - **superblock**：文件系统整体信息
+    - block 和 inode 总量
+    - 已使用/未使用的 inode/block
+    - block inode 大小
+    - filesystem 挂载时间，最近写入数据时间(不定时同步)，最近一次校验磁盘时间
+    - valid bit：显示是否怪哉(0 正常)
+  - **inode**：存放文件的属性信息，每个文件占用一个 inode
+    - 文件存取模式
+    - 文件属性如 owner group
+    - 文件权限如 770
+    - 容量
+    - atime，ctime，mtime
+    - pointer 实际指向位置
+  - **datablock**：实际数据存放的地方
+- 非索引式文件系统(FAT,闪存盘)
+  - 如果每个 block 太过分散则需要磁盘重组
+  - ？这难道不是很糟糕，fat 有什么好处，而且现在的 U 盘不是也能存放文件属性吗，也就是说现在 u 爬满也不再使用 fat 了？
+
+#### Linux 的 EXT2 文件系统（inode）
+
+索引式文件系统--> block group
+datablock 按大小分为 1，2，4K，这和扇区大小不同，基本都是 4K 去创建文件系统
+
+#### 与目录树的关系
+
+1. 查看/下文件夹 id，文件夹创建对应文件系统进行什么创建，你发现了 inode 和 4096 的关系了吗，为什么 usr 比较大？
+
+读取/etc/passwd 的流程
+
+1. /的 inode /的 block
+2. etc 的 inode etc 的 block
+3. passwd 的 inode passwd 的 block
+
+#### EXT2/EXT3/EXT4 文件的存取与日志式文件系统的功能
+
+##### 创建新文件的流程
+
+1. 确定使用者对于目录 w 与 x 的权限；
+2. 根据 inode bitmap 找到没有使用的 inode 号码，并将新文件的权限/属性写入；
+3. 根据 block bitmap 找到没有使用中的 block 号码，并将实际的数据写入 block 中，且更新 inode 的 block 指向数据；
+4. 将刚刚写入的 inode 与 block 数据同步更新 inode bitmap 与 block bitmap，并更新 superblock 的内容。
+
+##### 日志文件系统
+
+Journaling filesystem 是为了解决**不一致(inconsistent)问题**，简化 一致性检查的操作.
+
+1. 当系统写入文件前，首先在日志上记录
+2. 实际写入过程
+3. 写入完成后且完成 metadata 更新后，在日志记录
+
+#### Linux 文件系统的运行
+
+**非同步处理 （asynchronously）** 是为了解决磁盘和内存读写速度差距过大问题上的。Linux 讲不定是将内存中修改的 Dirty data 写入磁盘。
+可以使用 sync 强制写入，关机时系统会调用 sync。
+
+#### 挂载点的意义 （mount point）
+
+### 文件系统的简单操作
+
+#### 概念简答
+
+1. 比较 hardlink 和 symbolic link 的区别？
+   简要来说 hardlink 指向某文件的 inode，即使改名源文件也不会影响 hardlink；而 symbolic link 指向某文件的文件名，改名会受到影响。
+
+2. 什么是 link 数目？
+   在使用 ls -l 时有一列 link 数目的属性表示有多少 link 指向该文件。mkdir 子文件夹由于自然生成..所以源文件夹 link 数目会加一.
+
+### 磁盘的分区，格式化，检验和挂载
+
+#### 分区，格式化
+
+gdisk,mkfs.xfs
+
+#### 挂载
+
+> mount/unmont
+
+挂载几点注意：
+
+1. 挂载的目录理论上都应该是空目录
+2. 单一文件系统不应该被挂载到不同目录
+3. 单一目录不应该重复挂载多个文件系统
+
+#### 检验
+
+> 莫名其妙的死机非常可能导致文件系统的错乱。问题来啦，如果文件系统真的发生错乱的话，那该如何是好？就...挽救啊！
+
+检查刚创建的/dev/vda 文件系统(检查修复之前要保证文件系统卸载)：xfs_repair /dev/vda4
+
+#### 文件系统参数修订
+
+**硬件设备代码（major minor）**是逻辑上的文件和设备沟通的桥梁，可以在官网查到核心支持的硬件设备代码，具有特殊含义不可随意指定。
+生成一个 pipe 文件
+mknod /tmp/pipetest p
+更改设备的表头名称：
+xfs_admin -L /dev/vda lablename
+
+#### 简答
+
+1. 现有一块新的磁盘需要使用：
+   1. 必须经过哪些步骤一块磁盘能够被正确使用？
+   2. 再进行分区操作之间应该进行哪两步操作？
+   3. 如何进行 GPT 格式的分区？
+   4. 分区之后，linux 核心没有使用新的分区表，应该是用什么操作？
+   5. 如何创建 xfs 的文件系统？
+   6. 在创建文件系统后，挂载之前可选的是进行什么操作？
+   7. 如何挂载文件系统，如何设置自动挂载？
+2. 挂载文件系统到目录时候 Mount -t [uuid]：
+   1. 为什么参数 t 可以省略
+   2. 为什么推荐使用 uuid 而不是 label，为什么 uuid 很难重复（x）
+3. 什么是 4k 对齐？他和文件系统的 block 大小有什么关系？
+
+   **4k 对齐**是将文件系统格式和硬盘物理结构对应起来，能够提高磁盘使用寿命，提高空间使用效率。
+
+   > 举例来说：现时 Windows 中常见使用的 NTFS 文件系统，默认定义为 4096 字节大小为一个簇。但 NTFS 分区因为其引导区占用了一个磁道共 63 个扇区[1]，真正的文件系统在 63 号扇区之后，这会导致每个簇都会跨越两个扇区，占据第一个扇区的后 512 字节和第二个扇区的前 3584 字节。文件系统在读写某个簇的时候，硬盘需要读写两个物理单元，这会降低读写速度，并缩短使用寿命。现时一般使用一些硬盘分区软件在主引导记录的 63 个扇区后空出数个扇区以对齐文件系统的每簇 4096 字节，以避免过多的读写操作，提升读写速度、延长使用寿命。
