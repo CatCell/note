@@ -75,6 +75,9 @@ drwx------ 2 ubuntu ubuntu 4096 May 18  2022 .ssh
 | static   | /usr(软件放置) /opt(第三方软件)                     | /etc(配置文件) /boot(开机和核心档)     |
 | variavle | /var/mail(使用者邮件信箱) /var/spool/news(新闻群组) | /var/lock(程序相关) /var/run(程序相关) |
 
+> **/etc** ：系统的配置文件目录。密码文件，设置网卡信息，环境变量的设置，网络配置文件都在此目录。
+> **/boot** ：存放系统内核和系统启动文件系统启动时最先被装载。
+
 ### 简答
 
 1. FHS
@@ -96,6 +99,7 @@ drwx------ 2 ubuntu ubuntu 4096 May 18  2022 .ssh
 ### 文件与目录管理
 
 - **ls -a -l**:list 隐藏文件，以长数据格式串列出
+- **ls -i** ：list 出每个文件的 inode
 - 文件操作
   - **cp**
   - **mv**：移动，更名(rename 专职批量重命名)
@@ -236,7 +240,7 @@ gdisk,mkfs.xfs
 
 #### 文件系统参数修订
 
-**硬件设备代码（major minor）**是逻辑上的文件和设备沟通的桥梁，可以在官网查到核心支持的硬件设备代码，具有特殊含义不可随意指定。
+**硬件设备代码（major minor）** 是逻辑上的文件和设备沟通的桥梁，可以在官网查到核心支持的硬件设备代码，具有特殊含义不可随意指定。
 生成一个 pipe 文件
 mknod /tmp/pipetest p
 更改设备的表头名称：
@@ -259,4 +263,68 @@ xfs_admin -L /dev/vda lablename
 
    **4k 对齐**是将文件系统格式和硬盘物理结构对应起来，能够提高磁盘使用寿命，提高空间使用效率。
 
-   > 举例来说：现时 Windows 中常见使用的 NTFS 文件系统，默认定义为 4096 字节大小为一个簇。但 NTFS 分区因为其引导区占用了一个磁道共 63 个扇区[1]，真正的文件系统在 63 号扇区之后，这会导致每个簇都会跨越两个扇区，占据第一个扇区的后 512 字节和第二个扇区的前 3584 字节。文件系统在读写某个簇的时候，硬盘需要读写两个物理单元，这会降低读写速度，并缩短使用寿命。现时一般使用一些硬盘分区软件在主引导记录的 63 个扇区后空出数个扇区以对齐文件系统的每簇 4096 字节，以避免过多的读写操作，提升读写速度、延长使用寿命。
+   > 举例来说：现时 Windows 中常见使用的 NTFS 文件系统，默认定义为 4096 字节大小为一个簇。但 NTFS 分区因为其引导区占用了一个磁道共 63 个扇区，真正的文件系统在 63 号扇区之后，这会导致每个簇都会跨越两个扇区，占据第一个扇区的后 512 字节和第二个扇区的前 3584 字节。文件系统在读写某个簇的时候，硬盘需要读写两个物理单元，这会降低读写速度，并缩短使用寿命。现时一般使用一些硬盘分区软件在主引导记录的 63 个扇区后空出数个扇区以对齐文件系统的每簇 4096 字节，以避免过多的读写操作，提升读写速度、延长使用寿命。
+
+### 设置开机挂载
+
+#### fstab
+
+> **/etc/fstab** （filesystem table） 就是将我们利用 mount 指令进行挂载时， 将所有的选项与参数写入到这个文件中就是了。除此之外， /etc/fstab 还加入了 dump 这个备份用指令的支持！与开机时是否进行文件系统检验 fsck 等指令有关。
+
+```bash
+ubuntu@VM-4-5-ubuntu:~$ cat /etc/fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/vda2 during curtin installation
+/dev/disk/by-uuid/7bccaefa-b039-4ff6-bd32-22dde0066c0b / ext4 defaults 0 1
+/dev/disk/by-id/virtio-disk-at1zqboh /root/temp_data ext4 defaults 0 0
+```
+
+可以看到分为六栏分别是
+
+- 文件系统名字(可以填 uuid，lable，设备名)
+- 挂载点
+- 文件系统类型
+- 挂载参数（后表）
+- dump(和备份有关)
+- fsck 校验扇区，xfs 文件系统会自身校验可填 0
+
+挂载参数
+
+| 参数        | 内容                                 |
+| ----------- | ------------------------------------ |
+| async/sync  | 默认性能较佳的 sync 模式             |
+| auto/noauto | 默认 auto，自动挂载                  |
+| rw/ro       | 默认以读写 ro 挂载                   |
+| exec/noexec | 默认 exec 可执行挂载                 |
+| user/nouser | 默认 nouser 挂载，仅有 root 可以挂载 |
+| suid/nosuid | 默认允许 suid 生效，前提是 exec      |
+| defaults    | 全部使用默认，常用                   |
+
+#### 特殊设备的 loop 挂载
+
+> 如果有光盘镜像文件，或者是 **使用文件作为磁盘** 的方式时，那就得要使用特别的方法来将他 挂载起来，不需要烧录啦！
+
+1. 创建大型文件:dd if=/dev/zero of=/srv/loopdev bs=1M count=512
+2. 格式化:mkfs-xfs -f /srv/loopdev
+3. 挂载文件: mount -o loop UUID="7dd97bd2-4446-48fd-9d23-a8b03ffdd5ee" /mnt
+
+> **/mnt (mount)** 此目录主要是作为挂载点使用。如挂在 windows 下的某个分区，挂载 iso 文件。
+> **/media** 用于挂载多媒体设备
+> **/lib** 根文件系统目录下程序和核心模块的共享库，存放着系统最基本的动态链接共享库，类似于 windows 下的 system32 目录，所有应用程序都需要用到这些库
+
+### swap 的创建
+
+> 说实话，swap 在目前的桌面电脑来讲，存在的意义已经不大了！这是因为目前的 x86 主机所含的内存实在都太大了 （一般入门级至少也都有 4GB 了）...如果是**针对服务器或者是工作站**这些常年上线的系统来说的话，那么，无论如何，swap 还是需要创建的。
+
+1. dd/分区 ：gdisk(**8200**而不是默认的 linux 文件系统)/dd if=/dev/zero of=/...
+2. 格式化(make filesystem):mkswap /dev/vda6
+3. 挂载 swapon -a /dev/vda6
+   1. swapoff
+   2. swapon -s :查看哪些设备作为 swap
+   3. free:查看内存使用情况
