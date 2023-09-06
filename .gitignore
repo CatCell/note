@@ -2,3 +2,5 @@
 code/used
 notnow
 .vscode
+.gitignore
+code/algorithm
